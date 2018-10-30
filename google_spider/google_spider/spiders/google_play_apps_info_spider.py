@@ -3,18 +3,19 @@ import scrapy
 class google_spider(scrapy.Spider):
     name = "google_play_apps_info"
 
-    host = "https://play.google.com"
+    host = 'https://play.google.com'
 
     start_urls = [
-        "https://play.google.com/store/apps?hl=en",
+        'https://play.google.com/store/apps/category/GAME?hl=en',
     ]
 
     def parse(self, response):
-        categories = response.xpath('//div[contains(@jsinstance, "1")]/div[contains(@jsl, "$x 5;$t t-QH4hoG9vrLo;$x 0;")]//ul/li')
+        categories = response.xpath(
+            '//div[contains(@jsinstance, "1")]/div[contains(@jsl, "$x 5;$t t-QH4hoG9vrLo;$x 0;")]//ul/li')
         for category in categories:
-            category_href = category.xpath('./div/a/@href').extract_first()
-            category_url = "{}{}".format(self.host, category_href)
-            yield response.follow(category_url, self.parse_games)
+            category_url = category.xpath('./div/a/@href').extract_first()
+            full_url = '{}{}'.format(self.host, category_url)
+            yield response.follow(full_url, self.parse_games)
 
     def parse_games(self, response):
         category = response.xpath('//span[contains(@jsan, "7.title")]/text()').extract_first()
